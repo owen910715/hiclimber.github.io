@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hi! 山友 V7 - 旗艦穩定版</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-teal: #00A4A7;
+            --nanshan-navy: #004098;
+            --bg-gray: #F4F7F9;
+            --white: #FFFFFF;
+            --accent-orange: #FF9F43;
+            --gold: #FFD700;
+        }
+
+        * { box-sizing: border-box; font-family: "Microsoft JhengHei", "PingFang TC", sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: #1a2a3a; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+
+        /* 手機外框 */
+        .iphone-frame {
+            width: 375px; height: 812px; background: #000; border-radius: 45px; padding: 12px;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.6); position: relative; border: 4px solid #333;
+        }
+
+        .iphone-screen {
+            width: 100%; height: 100%; background: var(--bg-gray); border-radius: 33px;
+            overflow: hidden; position: relative; display: flex; flex-direction: column;
+        }
+
+        .notch {
+            position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+            width: 160px; height: 28px; background: #000;
+            border-bottom-left-radius: 18px; border-bottom-right-radius: 18px; z-index: 1100;
+        }
+
+        /* 頂部導覽 (南山藍綠) */
+        header {
+            background: linear-gradient(135deg, var(--primary-teal) 0%, var(--nanshan-navy) 100%);
+            padding: 50px 18px 15px; color: white; z-index: 900;
+        }
+
+        .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .points-badge {
+            background: white; color: var(--nanshan-navy); padding: 5px 14px;
+            border-radius: 20px; font-size: 13px; font-weight: 800; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        /* 內容視圖切換 */
+        .content-body { flex: 1; overflow-y: auto; }
+        .view { display: none; padding: 15px; animation: fadeIn 0.3s ease-in-out; }
+        .view.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* 貼文樣式 */
+        .post-card {
+            background: var(--white); border-radius: 20px; padding: 18px;
+            margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        }
+        .post-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .avatar { 
+            width: 38px; height: 38px; border-radius: 12px; display: flex; 
+            justify-content: center; align-items: center; color: white; font-weight: bold;
+        }
+        .poster-name { font-weight: bold; font-size: 13px; color: #555; }
+        .post-title { font-weight: 800; color: var(--nanshan-navy); margin-bottom: 6px; font-size: 16px; }
+        .post-content { font-size: 14px; color: #444; line-height: 1.6; }
+        .post-hashtags { color: var(--primary-teal); font-size: 13px; margin: 10px 0; font-weight: 600; }
+        
+        .post-actions { display: flex; gap: 20px; padding: 12px 0; border-top: 1px solid #f9f9f9; }
+        .action-item { display: flex; align-items: center; gap: 6px; color: #777; font-size: 14px; }
+        .btn-help {
+            width: 100%; border: none; background: #F0FBFC; color: var(--primary-teal); 
+            padding: 12px; border-radius: 12px; font-weight: bold; cursor: pointer;
+        }
+
+        /* 看板樣式 */
+        .board-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .board-card {
+            background: white; border-radius: 18px; padding: 22px 10px; text-align: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.04); border: 1px solid #eee;
+        }
+        .board-card i { font-size: 24px; margin-bottom: 10px; color: var(--primary-teal); display: block; }
+        .board-card span { font-weight: bold; font-size: 13px; color: var(--nanshan-navy); }
+
+        /* 成就樣式 */
+        .achieve-box {
+            background: white; border-radius: 20px; padding: 20px; margin-bottom: 15px;
+            box-shadow: 0 5px 15px rgba(0,164,167,0.1);
+        }
+        .stat-row { display: flex; justify-content: space-around; margin-top: 15px; }
+        .stat-item { text-align: center; }
+        .stat-num { display: block; font-size: 20px; font-weight: 900; color: var(--primary-teal); }
+        .progress-bar { height: 8px; background: #eee; border-radius: 4px; margin: 10px 0; overflow: hidden; }
+        .progress-fill { width: 65%; height: 100%; background: var(--primary-teal); }
+
+        /* 底部導航 */
+        .bottom-nav {
+            height: 85px; background: var(--white); display: flex;
+            justify-content: space-around; align-items: center; border-top: 1px solid #eee; padding-bottom: 20px;
+        }
+        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; color: #bbb; cursor: pointer; }
+        .nav-item.active { color: var(--nanshan-navy); }
+        .btn-plus-fixed {
+            width: 54px; height: 54px; background: linear-gradient(135deg, var(--primary-teal), var(--nanshan-navy));
+            border-radius: 18px; display: flex; justify-content: center; align-items: center;
+            color: white; font-size: 26px; transform: translateY(-22px); box-shadow: 0 6px 15px rgba(0,164,167,0.3);
+        }
+    </style>
+</head>
+<body>
+
+<div class="iphone-frame">
+    <div class="notch"></div>
+    <div class="iphone-screen">
+        
+        <header>
+            <div class="header-top">
+                <div style="font-weight: 900; font-size: 22px;">Hi! 山友</div>
+                <div class="points-badge" id="top-pts">1,250 pts</div>
+            </div>
+            <div style="background: rgba(255,255,255,0.2); border-radius: 12px; padding: 10px 14px; font-size: 14px; display: flex; align-items: center; gap: 10px;">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <span>搜尋山友智慧...</span>
+            </div>
+        </header>
+
+        <div class="content-body">
+            <!-- 1. 首頁 (試算表連動) -->
+            <div id="view-home" class="view active">
+                <div id="post-feed">
+                    <div style="text-align:center; padding:40px; color:#999;">
+                        <i class="fas fa-sync fa-spin"></i> 正在獲取最新回饋...
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. 看板 -->
+            <div id="view-board" class="view">
+                <h3 style="color:var(--nanshan-navy); margin-bottom:15px;">看板分類</h3>
+                <div class="board-grid">
+                    <div class="board-card"><i class="fa-solid fa-screwdriver-wrench"></i><span>疑難雜症</span></div>
+                    <div class="board-card"><i class="fa-solid fa-wand-magic-sparkles"></i><span>生活大發現</span></div>
+                    <div class="board-card"><i class="fa-solid fa-pen-nib"></i><span>實習日誌</span></div>
+                    <div class="board-card"><i class="fa-solid fa-earth-americas"></i><span>時事話題</span></div>
+                    <div class="board-card"><i class="fa-solid fa-umbrella-beach"></i><span>社團活動</span></div>
+                    <div class="board-card"><i class="fa-solid fa-coffee"></i><span>職場補給站</span></div>
+                </div>
+            </div>
+
+            <!-- 3. 成就 -->
+            <div id="view-achieve" class="view">
+                <h3 style="color:var(--nanshan-navy);">我的成就</h3>
+                <div class="achieve-box">
+                    <div style="display:flex; align-items:center; gap:15px;">
+                        <div style="width:50px; height:50px; border-radius:50%; background:var(--gold); display:flex; align-items:center; justify-content:center; color:white; font-size:24px;">
+                            <i class="fa-solid fa-trophy"></i>
+                        </div>
+                        <div style="flex:1;">
+                            <div style="font-weight:bold; font-size:16px;">LV.4 知識專家</div>
+                            <div class="progress-bar"><div class="progress-fill"></div></div>
+                            <div style="font-size:11px; color:#999;">距離下一級還差 250 pts</div>
+                        </div>
+                    </div>
+                    <div class="stat-row">
+                        <div class="stat-item"><span class="stat-num" id="stat-pts">1,250</span><span style="font-size:11px; color:#888;">總點數</span></div>
+                        <div class="stat-item"><span class="stat-num">14</span><span style="font-size:11px; color:#888;">答題數目</span></div>
+                        <div class="stat-item"><span class="stat-num">5</span><span style="font-size:11px; color:#888;">本月排名</span></div>
+                    </div>
+                </div>
+                <h3 style="color:var(--nanshan-navy);">本月榮譽榜</h3>
+                <div style="background:white; border-radius:15px; padding:10px;">
+                    <div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #eee;"><span>1. 台北理賠 王大明</span><span style="color:var(--primary-teal); font-weight:bold;">4,205 pts</span></div>
+                    <div style="display:flex; justify-content:space-between; padding:10px;"><span>2. 數位辦公室 小探險家</span><span style="color:var(--primary-teal); font-weight:bold;">3,780 pts</span></div>
+                </div>
+            </div>
+
+            <!-- 4. 個人 -->
+            <div id="view-profile" class="view">
+                <div style="text-align: center; padding: 20px;">
+                    <div style="width: 80px; height: 80px; border-radius: 50%; background: var(--nanshan-navy); margin: 0 auto 10px; display: flex; align-items:center; justify-content:center; font-size:35px; color:white; border: 4px solid white; box-shadow:0 5px 15px rgba(0,0,0,0.1);">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <h3 style="margin: 0;">山友小安</h3>
+                    <span style="color: var(--primary-teal); font-weight:bold; font-size: 14px;">資訊安全部</span>
+                </div>
+                <div style="background:white; border-radius:18px; overflow:hidden; box-shadow:0 2px 10px rgba(0,0,0,0.03);">
+                    <div style="padding:15px; border-bottom:1px solid #f5f5f5; display:flex; justify-content:space-between;"><span>我的發文回饋</span><i class="fa-solid fa-chevron-right" style="color:#ccc;"></i></div>
+                    <div style="padding:15px; border-bottom:1px solid #f5f5f5; display:flex; justify-content:space-between;"><span>收藏的山友智慧</span><i class="fa-solid fa-chevron-right" style="color:#ccc;"></i></div>
+                    <div style="padding:15px; border-bottom:1px solid #f5f5f5; display:flex; justify-content:space-between; color:var(--accent-orange); font-weight:bold;"><span>點數兌換 (已領取3張咖啡券)</span><i class="fa-solid fa-mug-hot"></i></div>
+                </div>
+            </div>
+        </div>
+
+        <nav class="bottom-nav">
+            <div class="nav-item active" onclick="navTo('home', this)"><i class="fa-solid fa-house"></i><span style="font-size:10px; margin-top:4px;">首頁</span></div>
+            <div class="nav-item" onclick="navTo('board', this)"><i class="fa-solid fa-compass"></i><span style="font-size:10px; margin-top:4px;">看板</span></div>
+            <div class="plus-box"><div class="btn-plus-fixed" onclick="alert('連結發文表單...')"><i class="fa-solid fa-plus"></i></div></div>
+            <div class="nav-item" onclick="navTo('achieve', this)"><i class="fa-solid fa-medal"></i><span style="font-size:10px; margin-top:4px;">成就</span></div>
+            <div class="nav-item" onclick="navTo('profile', this)"><i class="fa-solid fa-circle-user"></i><span style="font-size:10px; margin-top:4px;">個人</span></div>
+        </nav>
+    </div>
+</div>
+
+<script>
+    // ⚠️ 請確保您的連結為「發佈至網路」並選擇「CSV」
+    const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRmbD4sI6pf2sUYquUKwZMYGWtl-uFcuSGvfJvX8amjCLckwjknr9xP-edTZ_NrDwyLcG64Dxr2-91o/pub?output=csv';
+    let myPoints = 1250;
+
+    function navTo(id, el) {
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        document.getElementById('view-' + id).classList.add('active');
+        el.classList.add('active');
+    }
+
+    // 核心資料讀取邏輯
+    async function loadSheetsData() {
+        const feed = document.getElementById('post-feed');
+        try {
+            // 加入抗快取參數 (?t=...) 確保資料最新
+            const response = await fetch(csvUrl + '&t=' + new Date().getTime());
+            if (!response.ok) throw new Error('Network fail');
+            
+            const rawData = await response.text();
+            const rows = parseCSV(rawData);
+            
+            if (rows.length <= 1) {
+                showMockData("目前表單尚未有資料，快去填寫回覆吧！");
+                return;
+            }
+
+            feed.innerHTML = ''; // 清除 Loading
+            // 從最後一筆顯示到第一筆 (最新發文在前)
+            for (let i = rows.length - 1; i >= 1; i--) {
+                const col = rows[i];
+                if (col.length >= 3) {
+                    renderPost(col[1], col[2], col[3], col[4] || "#內部分享");
+                }
+            }
+        } catch (error) {
+            console.error("連結失敗，啟動展示模式:", error);
+            showMockData("連結讀取失敗（可能是CORS限制），目前顯示展示資料：");
+        }
+    }
+
+    // 支援複雜 CSV 格式的解析器
+    function parseCSV(text) {
+        const rows = [];
+        const lines = text.split(/\r?\n/);
+        lines.forEach(line => {
+            const matches = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
+            if (matches) {
+                rows.push(matches.map(m => m.replace(/^"|"$/g, '')));
+            }
+        });
+        return rows;
+    }
+
+    function showMockData(msg) {
+        const feed = document.getElementById('post-feed');
+        feed.innerHTML = `<div style="font-size:12px; color:#999; text-align:center; margin-bottom:10px;">${msg}</div>`;
+        renderPost("資安部小安", "新版 VPN 登入教學", "各位山友，新版 VPN 請記得先下載認證器...", "#疑難雜症");
+        renderPost("南山小司機", "10樓咖啡機又修好了！", "這次維修後咖啡豆好像換了，大家快去喝。", "#生活大發現");
+        renderPost("實習生阿明", "實習第一週心得", "南山的文化真的很讚，學長姐都很願意教...", "#實習日誌");
+    }
+
+    function renderPost(name, title, content, tags) {
+        const feed = document.getElementById('post-feed');
+        const card = document.createElement('div');
+        card.className = 'post-card';
+        const color = (name.includes('部') || name.includes('組')) ? 'var(--nanshan-navy)' : 'var(--primary-teal)';
+        
+        card.innerHTML = `
+            <div class="post-header">
+                <div class="avatar" style="background:${color}">${name.substring(0,1)}</div>
+                <div class="poster-name">${name} · 剛剛</div>
+            </div>
+            <div class="post-title">${title}</div>
+            <div class="post-content">${content}</div>
+            <div class="post-hashtags">${tags}</div>
+            <div class="post-actions">
+                <div class="action-item" onclick="this.style.color='#ff4757'"><i class="fa-solid fa-heart"></i></div>
+                <div class="action-item"><i class="fa-regular fa-comment"></i></div>
+                <div class="action-item"><i class="fa-regular fa-bookmark"></i></div>
+            </div>
+            <button class="btn-help" onclick="earn(this)">這對我有幫助 (+5 點數)</button>
+        `;
+        feed.appendChild(card);
+    }
+
+    function earn(btn) {
+        myPoints += 5;
+        document.getElementById('top-pts').innerText = myPoints.toLocaleString() + ' pts';
+        document.getElementById('stat-pts').innerText = myPoints.toLocaleString();
+        btn.innerText = '已為山友貢獻點數 ✅';
+        btn.disabled = true;
+        btn.style.opacity = '0.5';
+    }
+
+    // 啟動與自動定時讀取
+    loadSheetsData();
+    setInterval(loadSheetsData, 15000); 
+</script>
+
+</body>
+</html>

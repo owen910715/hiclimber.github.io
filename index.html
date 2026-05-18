@@ -242,15 +242,17 @@
             <h2>Hi! 山友</h2>
             <p>南山人的知識交流平台</p>
         </div>
+        <form onsubmit="doLogin(event)">
         <div class="login-field">
             <label>帳號</label>
-            <input type="text" class="login-input" placeholder="請輸入帳號">
+            <input type="text" id="login-username" class="login-input" placeholder="請輸入帳號">
         </div>
         <div class="login-field">
             <label>密碼</label>
-            <input type="password" class="login-input" placeholder="請輸入密碼">
+            <input type="password" id="login-password" class="login-input" placeholder="請輸入密碼">
         </div>
-        <button class="btn-login">登入</button>
+        <button type="submit" class="btn-login">登入</button>
+        </form>
         <button class="btn-guest" onclick="enterAsGuest()">以訪客身分登入</button>
     </div>
 </div>
@@ -408,7 +410,25 @@
 </div>
 
 <script>
+    // 若已登入則直接隱藏登入畫面
+    if (localStorage.getItem('hiclimber_loggedIn') === 'true') {
+        document.getElementById('screen-login').style.display = 'none';
+    }
+
+    function doLogin(event) {
+        if (event) event.preventDefault();
+        const username = document.getElementById('login-username').value.trim();
+        const password = document.getElementById('login-password').value.trim();
+        if (!username || !password) {
+            alert('請輸入帳號與密碼！');
+            return;
+        }
+        localStorage.setItem('hiclimber_loggedIn', 'true');
+        document.getElementById('screen-login').style.display = 'none';
+    }
+
     function enterAsGuest() {
+        localStorage.setItem('hiclimber_loggedIn', 'true');
         document.getElementById('screen-login').style.display = 'none';
     }
 
@@ -621,6 +641,13 @@
                     renderPost(col[1], col[2], col[3], col[4] || "#內部分享", feed, stableId);
                 }
             }
+            // 顯示所有看板的範例貼文，並標示所屬看板
+            Object.keys(boardData).forEach(function(boardName) {
+                boardData[boardName].forEach(function(p) {
+                    const stableId = makeStableId(p.name, p.title);
+                    renderPost(p.name, p.title, p.content, p.tags, feed, stableId, false, boardName);
+                });
+            });
         } catch (error) {
             console.error("連結失敗，啟動展示模式:", error);
             showMockData("連結讀取失敗（可能是CORS限制），目前顯示展示資料：");
@@ -755,8 +782,8 @@
             { name: '資深山友老陳', title: '年終考核前必讀：如何寫出亮眼的自評表', content: '自評表是向主管展示你一整年努力的舞台。建議以「數字化成果 → 克服的挑戰 → 未來計畫」三段式撰寫。切記避免過度謙虛，要客觀、具體地呈現你的貢獻！', tags: '#職場補給站 #年終考核 #職涯技巧' }
         ],
         '心情': [
-            { name: '資安部小安', title: '新版 VPN 登入教學', content: '各位山友，新版 VPN 請記得先下載認證器 App，並確保裝置時間與網路時間同步。若仍有問題，請聯絡資訊服務台分機 1234。', tags: '#心情 #疑難雜症 #VPN' },
-            { name: '南山小司機', title: '10樓咖啡機又修好了！', content: '這次維修後咖啡豆好像換了，大家快去喝。10 樓的隱藏版午後好去處又回來了！', tags: '#心情 #生活大發現 #咖啡' }
+            { name: '業務部小萱', title: '今天簽下第一張保單，感動到想哭 😭', content: '終於！努力了三個月，今天終於簽下人生第一張保單！客戶是一對年輕夫妻，為剛出生的孩子規劃教育險。看到他們放心的笑容，覺得這份工作超有意義 🥹 感謝組長一路的指導與鼓勵！', tags: '#心情 #第一張保單 #感動' },
+            { name: '理賠部小建', title: '週五下班的感覺真的不一樣 🎉', content: '連續趕了三天的核保審件，今天總算清空了收件匣。雖然很累，但看到同事互相打氣、一起衝刺的樣子，突然覺得整個心都暖了。希望大家週末好好休息充電，下週繼續加油！', tags: '#心情 #週五快樂 #同事情' }
         ]
     };
 

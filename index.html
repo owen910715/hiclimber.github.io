@@ -109,6 +109,48 @@
         .progress-bar { height: 8px; background: #eee; border-radius: 4px; margin: 10px 0; overflow: hidden; }
         .progress-fill { width: 65%; height: 100%; background: var(--primary-teal); }
 
+        /* 搜尋輸入框 */
+        .search-input {
+            flex: 1; background: transparent; border: none; outline: none;
+            color: white; font-size: 14px; caret-color: white;
+        }
+        .search-input::placeholder { color: rgba(255,255,255,0.75); }
+
+        /* 發文 Modal */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 1000;
+            display: none; align-items: flex-end; justify-content: center;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal-sheet {
+            background: white; width: 100%; max-width: 540px;
+            border-radius: 24px 24px 0 0; padding: 24px 20px;
+            max-height: 85vh; overflow-y: auto;
+            animation: slideUp 0.3s ease-out;
+        }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .modal-title { font-size: 18px; font-weight: 900; color: var(--nanshan-navy); margin-bottom: 20px; text-align: center; }
+        .form-group { margin-bottom: 14px; }
+        .form-group label { font-size: 12px; color: #888; margin-bottom: 5px; display: block; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
+        .form-input {
+            width: 100%; border: 1.5px solid #eee; border-radius: 12px;
+            padding: 10px 14px; font-size: 14px; outline: none;
+            font-family: "Microsoft JhengHei", "PingFang TC", sans-serif;
+            transition: border-color 0.2s;
+        }
+        .form-input:focus { border-color: var(--primary-teal); }
+        .form-textarea { resize: none; height: 90px; }
+        .btn-submit {
+            width: 100%; background: linear-gradient(135deg, var(--primary-teal), var(--nanshan-navy));
+            color: white; border: none; padding: 14px; border-radius: 14px;
+            font-size: 15px; font-weight: bold; cursor: pointer; margin-top: 6px;
+        }
+        .btn-cancel {
+            width: 100%; background: #f5f5f5; color: #888; border: none;
+            padding: 11px; border-radius: 14px; font-size: 14px; cursor: pointer; margin-top: 8px;
+        }
+
         /* 底部導航 */
         .bottom-nav {
             background: var(--white); display: flex;
@@ -123,9 +165,74 @@
             border-radius: 18px; display: flex; justify-content: center; align-items: center;
             color: white; font-size: 26px; transform: translateY(-22px); box-shadow: 0 6px 15px rgba(0,164,167,0.3);
         }
+
+        /* 登入頁面 */
+        #screen-login {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(160deg, var(--primary-teal) 0%, var(--nanshan-navy) 100%);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 2000; padding: 24px;
+        }
+        .login-card {
+            background: white; border-radius: 28px; padding: 36px 28px;
+            width: 100%; max-width: 400px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+        .login-logo {
+            text-align: center; margin-bottom: 28px;
+        }
+        .login-logo .logo-icon {
+            width: 72px; height: 72px; border-radius: 22px;
+            background: linear-gradient(135deg, var(--primary-teal), var(--nanshan-navy));
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 14px; color: white; font-size: 32px;
+            box-shadow: 0 8px 20px rgba(0,164,167,0.35);
+        }
+        .login-logo h2 { margin: 0; color: var(--nanshan-navy); font-size: 22px; font-weight: 900; }
+        .login-logo p { margin: 4px 0 0; color: #888; font-size: 13px; }
+        .login-field { margin-bottom: 14px; }
+        .login-field label { font-size: 12px; color: #888; font-weight: bold; letter-spacing: 0.5px; display: block; margin-bottom: 6px; text-transform: uppercase; }
+        .login-input {
+            width: 100%; border: 1.5px solid #eee; border-radius: 12px;
+            padding: 12px 14px; font-size: 14px; outline: none;
+            font-family: "Microsoft JhengHei", "PingFang TC", sans-serif;
+            transition: border-color 0.2s;
+        }
+        .login-input:focus { border-color: var(--primary-teal); }
+        .btn-login {
+            width: 100%; background: linear-gradient(135deg, var(--primary-teal), var(--nanshan-navy));
+            color: white; border: none; padding: 14px; border-radius: 14px;
+            font-size: 15px; font-weight: bold; cursor: pointer; margin-top: 8px;
+        }
+        .btn-guest {
+            width: 100%; background: none; border: none; color: var(--primary-teal);
+            font-size: 14px; font-weight: bold; cursor: pointer; margin-top: 16px;
+            padding: 10px; border-radius: 12px; transition: background 0.15s;
+        }
+        .btn-guest:hover { background: rgba(0,164,167,0.08); }
     </style>
 </head>
 <body>
+
+<div id="screen-login">
+    <div class="login-card">
+        <div class="login-logo">
+            <div class="logo-icon"><i class="fa-solid fa-mountain"></i></div>
+            <h2>Hi! 山友</h2>
+            <p>南山人的知識交流平台</p>
+        </div>
+        <div class="login-field">
+            <label>帳號</label>
+            <input type="text" class="login-input" placeholder="請輸入帳號">
+        </div>
+        <div class="login-field">
+            <label>密碼</label>
+            <input type="password" class="login-input" placeholder="請輸入密碼">
+        </div>
+        <button class="btn-login">登入</button>
+        <button class="btn-guest" onclick="enterAsGuest()">以訪客身分登入</button>
+    </div>
+</div>
 
 <div class="app-screen">
         
@@ -135,8 +242,8 @@
                 <div class="points-badge" id="top-pts">1,250 pts</div>
             </div>
             <div style="background: rgba(255,255,255,0.2); border-radius: 12px; padding: 10px 14px; font-size: 14px; display: flex; align-items: center; gap: 10px;">
-                <i class="fa-solid fa-magnifying-glass"></i>
-                <span>搜尋山友智慧...</span>
+                <i class="fa-solid fa-magnifying-glass" style="color:rgba(255,255,255,0.85);"></i>
+                <input type="text" id="search-input" class="search-input" placeholder="搜尋山友智慧..." oninput="filterPosts(this.value)">
             </div>
         </header>
 
@@ -202,15 +309,15 @@
             <!-- 4. 個人 -->
             <div id="view-profile" class="view">
                 <div style="text-align: center; padding: 20px;">
-                    <div style="width: 80px; height: 80px; border-radius: 50%; background: var(--nanshan-navy); margin: 0 auto 10px; display: flex; align-items:center; justify-content:center; font-size:35px; color:white; border: 4px solid white; box-shadow:0 5px 15px rgba(0,0,0,0.1);">
-                        <i class="fa-solid fa-shield-halved"></i>
+                    <div style="width: 80px; height: 80px; border-radius: 50%; background: #bbb; margin: 0 auto 10px; display: flex; align-items:center; justify-content:center; font-size:35px; color:white; border: 4px solid white; box-shadow:0 5px 15px rgba(0,0,0,0.1);">
+                        <i class="fa-solid fa-user"></i>
                     </div>
-                    <h3 style="margin: 0;">山友小安</h3>
-                    <span style="color: var(--primary-teal); font-weight:bold; font-size: 14px;">資訊安全部</span>
+                    <h3 style="margin: 0;">訪客</h3>
+                    <span style="color: #aaa; font-weight:bold; font-size: 14px;">尚未登入</span>
                 </div>
                 <div style="background:white; border-radius:18px; overflow:hidden; box-shadow:0 2px 10px rgba(0,0,0,0.03);">
-                    <div style="padding:15px; border-bottom:1px solid #f5f5f5; display:flex; justify-content:space-between;"><span>我的發文回饋</span><i class="fa-solid fa-chevron-right" style="color:#ccc;"></i></div>
-                    <div style="padding:15px; border-bottom:1px solid #f5f5f5; display:flex; justify-content:space-between;"><span>收藏的山友智慧</span><i class="fa-solid fa-chevron-right" style="color:#ccc;"></i></div>
+                    <div style="padding:15px; border-bottom:1px solid #f5f5f5; display:flex; justify-content:space-between; cursor:pointer;" onclick="alert('登入後即可使用此功能！')"><span>我的發文回饋</span><i class="fa-solid fa-chevron-right" style="color:#ccc;"></i></div>
+                    <div style="padding:15px; border-bottom:1px solid #f5f5f5; display:flex; justify-content:space-between; cursor:pointer;" onclick="alert('登入後即可使用此功能！')"><span>收藏的山友智慧</span><i class="fa-solid fa-chevron-right" style="color:#ccc;"></i></div>
                     <div style="padding:15px; border-bottom:1px solid #f5f5f5; display:flex; justify-content:space-between; color:var(--accent-orange); font-weight:bold;"><span>點數兌換 (已領取3張咖啡券)</span><i class="fa-solid fa-mug-hot"></i></div>
                 </div>
             </div>
@@ -219,26 +326,95 @@
         <nav class="bottom-nav">
             <div class="nav-item active" onclick="navTo('home', this)"><i class="fa-solid fa-house"></i><span style="font-size:10px; margin-top:4px;">首頁</span></div>
             <div class="nav-item" onclick="navTo('board', this)"><i class="fa-solid fa-compass"></i><span style="font-size:10px; margin-top:4px;">看板</span></div>
-            <div class="plus-box"><div class="btn-plus-fixed" onclick="alert('連結發文表單...')"><i class="fa-solid fa-plus"></i></div></div>
+            <div class="plus-box"><div class="btn-plus-fixed" onclick="openPostModal()"><i class="fa-solid fa-plus"></i></div></div>
             <div class="nav-item" onclick="navTo('achieve', this)"><i class="fa-solid fa-medal"></i><span style="font-size:10px; margin-top:4px;">成就</span></div>
             <div class="nav-item" onclick="navTo('profile', this)"><i class="fa-solid fa-circle-user"></i><span style="font-size:10px; margin-top:4px;">個人</span></div>
         </nav>
 </div>
 
+<!-- 發文 Modal -->
+<div id="post-modal" class="modal-overlay" onclick="handleModalOverlayClick(event)">
+    <div class="modal-sheet">
+        <div class="modal-title">✏️ 分享你的山友智慧</div>
+        <div class="form-group">
+            <label>你的名稱</label>
+            <input type="text" id="new-post-name" class="form-input" placeholder="例如：資安部小安">
+        </div>
+        <div class="form-group">
+            <label>標題</label>
+            <input type="text" id="new-post-title" class="form-input" placeholder="簡短描述你的問題或分享">
+        </div>
+        <div class="form-group">
+            <label>內容</label>
+            <textarea id="new-post-content" class="form-input form-textarea" placeholder="詳細說明..."></textarea>
+        </div>
+        <div class="form-group">
+            <label>標籤 (選填)</label>
+            <input type="text" id="new-post-tags" class="form-input" placeholder="例如：#疑難雜症 #VPN">
+        </div>
+        <button class="btn-submit" onclick="submitPost()">🚀 發佈貼文</button>
+        <button class="btn-cancel" onclick="closePostModal()">取消</button>
+    </div>
+</div>
+
 <script>
-    // ⚠️ 請確保您的連結為「發佈至網路」並選擇「CSV」
+    function enterAsGuest() {
+        document.getElementById('screen-login').style.display = 'none';
+    }
+
     const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRmbD4sI6pf2sUYquUKwZMYGWtl-uFcuSGvfJvX8amjCLckwjknr9xP-edTZ_NrDwyLcG64Dxr2-91o/pub?output=csv';
     let myPoints = 1250;
     let postCounter = 0;
     const postStates = {};
 
+    /* ── localStorage 工具 ── */
+    function getStoredComments(postId) {
+        try {
+            const all = JSON.parse(localStorage.getItem('hiclimber_comments') || '{}');
+            return all[postId] || null;
+        } catch(e) { return null; }
+    }
+
+    function saveComments(postId, comments) {
+        try {
+            const all = JSON.parse(localStorage.getItem('hiclimber_comments') || '{}');
+            all[postId] = comments;
+            localStorage.setItem('hiclimber_comments', JSON.stringify(all));
+        } catch(e) {}
+    }
+
+    function saveUserPost(post) {
+        try {
+            const posts = JSON.parse(localStorage.getItem('hiclimber_user_posts') || '[]');
+            posts.push(post);
+            localStorage.setItem('hiclimber_user_posts', JSON.stringify(posts));
+        } catch(e) {}
+    }
+
+    function loadUserPosts() {
+        try {
+            return JSON.parse(localStorage.getItem('hiclimber_user_posts') || '[]');
+        } catch(e) { return []; }
+    }
+
+    /* 根據貼文內容產生穩定 ID（用於留言持久化） */
+    function makeStableId(name, title) {
+        const raw = (name + '||' + title);
+        let hash = 0;
+        for (let i = 0; i < raw.length; i++) {
+            hash = ((hash << 5) - hash + raw.charCodeAt(i)) | 0;
+        }
+        return 'p_' + Math.abs(hash).toString(36);
+    }
+
     function getPostState(postId) {
         if (!postStates[postId]) {
+            const storedComments = getStoredComments(postId);
             postStates[postId] = {
                 liked: false,
                 saved: false,
                 likeCount: Math.floor(Math.random() * 20) + 1,
-                comments: [
+                comments: storedComments !== null ? storedComments : [
                     { name: '資深山友', text: '感謝分享！', time: '2小時前' },
                     { name: '新鮮人小葉', text: '太有幫助了 👍', time: '1小時前' }
                 ]
@@ -252,6 +428,9 @@
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
         document.getElementById('view-' + id).classList.add('active');
         if (el) el.classList.add('active');
+        // 切換頁面時清空搜尋
+        const searchInput = document.getElementById('search-input');
+        if (searchInput) { searchInput.value = ''; filterPosts(''); }
     }
 
     function toggleLike(postId) {
@@ -290,11 +469,13 @@
         const text = input.value.trim();
         if (!text) return;
         const state = getPostState(postId);
-        state.comments.push({ name: '山友小安', text: text, time: '剛剛' });
+        const newComment = { name: '訪客', text: text, time: '剛剛' };
+        state.comments.push(newComment);
+        saveComments(postId, state.comments);
         const list = document.getElementById('comment-list-' + postId);
         const div = document.createElement('div');
         div.className = 'comment-item';
-        div.innerHTML = '<span class="comment-name">山友小安</span><span class="comment-text">' + escapeHtml(text) + '</span><span class="comment-time">剛剛</span>';
+        div.innerHTML = '<span class="comment-name">訪客</span><span class="comment-text">' + escapeHtml(text) + '</span><span class="comment-time">剛剛</span>';
         list.appendChild(div);
         input.value = '';
         // Update comment count badge
@@ -304,6 +485,68 @@
 
     function escapeHtml(str) {
         return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    /* ── 搜尋功能 ── */
+    function filterPosts(term) {
+        term = (term || '').toLowerCase().trim();
+        // 搜尋首頁 feed 和看板詳情 feed
+        ['post-feed', 'board-detail-feed'].forEach(function(feedId) {
+            const feedEl = document.getElementById(feedId);
+            if (!feedEl) return;
+            feedEl.querySelectorAll('.post-card').forEach(function(card) {
+                const title   = (card.querySelector('.post-title')?.textContent   || '').toLowerCase();
+                const content = (card.querySelector('.post-content')?.textContent || '').toLowerCase();
+                const tags    = (card.querySelector('.post-hashtags')?.textContent|| '').toLowerCase();
+                const name    = (card.querySelector('.poster-name')?.textContent  || '').toLowerCase();
+                const match = !term || title.includes(term) || content.includes(term) || tags.includes(term) || name.includes(term);
+                card.style.display = match ? '' : 'none';
+            });
+        });
+    }
+
+    /* ── 發文 Modal ── */
+    function openPostModal() {
+        document.getElementById('post-modal').classList.add('open');
+    }
+
+    function closePostModal() {
+        document.getElementById('post-modal').classList.remove('open');
+    }
+
+    function handleModalOverlayClick(e) {
+        if (e.target === document.getElementById('post-modal')) closePostModal();
+    }
+
+    function submitPost() {
+        const name    = document.getElementById('new-post-name').value.trim();
+        const title   = document.getElementById('new-post-title').value.trim();
+        const content = document.getElementById('new-post-content').value.trim();
+        let   tags    = document.getElementById('new-post-tags').value.trim();
+
+        if (!name || !title || !content) {
+            alert('請填寫名稱、標題與內容！');
+            return;
+        }
+        if (!tags) tags = '#內部分享';
+
+        const post = { name, title, content, tags, time: new Date().toISOString() };
+        saveUserPost(post);
+
+        const feed = document.getElementById('post-feed');
+        const stableId = makeStableId(name, title + post.time);
+        renderPost(name, title, content, tags, feed, stableId, true);
+        // 將新貼文捲到最上方
+        if (feed.firstChild) {
+            feed.firstChild.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // 重置表單
+        ['new-post-name','new-post-title','new-post-content','new-post-tags'].forEach(id => {
+            document.getElementById(id).value = '';
+        });
+        closePostModal();
+        navTo('home', document.querySelector('.nav-item'));
     }
 
     // 核心資料讀取邏輯
@@ -319,16 +562,28 @@
                 return;
             }
             feed.innerHTML = '';
+            // 先顯示使用者自發貼文
+            prependUserPosts(feed);
             for (let i = rows.length - 1; i >= 1; i--) {
                 const col = rows[i];
                 if (col.length >= 3) {
-                    renderPost(col[1], col[2], col[3], col[4] || "#內部分享", feed);
+                    const stableId = makeStableId(col[1] || '', col[2] || '');
+                    renderPost(col[1], col[2], col[3], col[4] || "#內部分享", feed, stableId);
                 }
             }
         } catch (error) {
             console.error("連結失敗，啟動展示模式:", error);
             showMockData("連結讀取失敗（可能是CORS限制），目前顯示展示資料：");
         }
+    }
+
+    function prependUserPosts(feedEl) {
+        const userPosts = loadUserPosts();
+        // 從最舊到最新排列（最新在最上方，透過 insertBefore 達成）
+        userPosts.forEach(function(p) {
+            const stableId = makeStableId(p.name, p.title + (p.time || ''));
+            renderPost(p.name, p.title, p.content, p.tags, feedEl, stableId, true);
+        });
     }
 
     // 支援複雜 CSV 格式的解析器
@@ -347,14 +602,16 @@
     function showMockData(msg) {
         const feed = document.getElementById('post-feed');
         feed.innerHTML = '<div style="font-size:12px; color:#999; text-align:center; margin-bottom:10px;">' + msg + '</div>';
-        renderPost("資安部小安", "新版 VPN 登入教學", "各位山友，新版 VPN 請記得先下載認證器...", "#疑難雜症", feed);
-        renderPost("南山小司機", "10樓咖啡機又修好了！", "這次維修後咖啡豆好像換了，大家快去喝。", "#生活大發現", feed);
-        renderPost("實習生阿明", "實習第一週心得", "南山的文化真的很讚，學長姐都很願意教...", "#實習日誌", feed);
+        // 先顯示使用者自發貼文
+        prependUserPosts(feed);
+        renderPost("資安部小安", "新版 VPN 登入教學", "各位山友，新版 VPN 請記得先下載認證器...", "#疑難雜症", feed, makeStableId("資安部小安", "新版 VPN 登入教學"));
+        renderPost("南山小司機", "10樓咖啡機又修好了！", "這次維修後咖啡豆好像換了，大家快去喝。", "#生活大發現", feed, makeStableId("南山小司機", "10樓咖啡機又修好了！"));
+        renderPost("實習生阿明", "實習第一週心得", "南山的文化真的很讚，學長姐都很願意教...", "#實習日誌", feed, makeStableId("實習生阿明", "實習第一週心得"));
     }
 
-    function renderPost(name, title, content, tags, feedEl) {
+    function renderPost(name, title, content, tags, feedEl, stableId, prepend) {
         if (!feedEl) feedEl = document.getElementById('post-feed');
-        const postId = 'post-' + (++postCounter);
+        const postId = stableId || ('post-' + (++postCounter));
         const state = getPostState(postId);
 
         const card = document.createElement('div');
@@ -388,13 +645,17 @@
             '<div id="comments-' + postId + '" class="comments-section" style="display:none;">' +
                 '<div id="comment-list-' + postId + '" class="comment-list">' + commentsHtml + '</div>' +
                 '<div class="comment-input-wrap">' +
-                    '<input type="text" id="comment-input-' + postId + '" class="comment-input" placeholder="寫下你的留言...">' +
+                    '<input type="text" id="comment-input-' + postId + '" class="comment-input" placeholder="寫下你的留言..." onkeydown="if(event.key===\'Enter\')addComment(\'' + postId + '\')">' +
                     '<button class="comment-send-btn" onclick="addComment(\'' + postId + '\')"><i class="fa-solid fa-paper-plane"></i></button>' +
                 '</div>' +
             '</div>' +
             '<button class="btn-help" onclick="earn(this)">這對我有幫助 (+5 點數)</button>';
 
-        feedEl.appendChild(card);
+        if (prepend && feedEl.firstChild) {
+            feedEl.insertBefore(card, feedEl.firstChild);
+        } else {
+            feedEl.appendChild(card);
+        }
     }
 
     function earn(btn) {
@@ -438,7 +699,8 @@
         const feedEl = document.getElementById('board-detail-feed');
         feedEl.innerHTML = '';
         (boardData[boardName] || []).forEach(function(p) {
-            renderPost(p.name, p.title, p.content, p.tags, feedEl);
+            const stableId = makeStableId(p.name, p.title);
+            renderPost(p.name, p.title, p.content, p.tags, feedEl, stableId);
         });
         document.getElementById('board-detail-title').textContent = boardName;
         document.querySelectorAll('.view').forEach(function(v) { v.classList.remove('active'); });

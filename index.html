@@ -165,9 +165,74 @@
             border-radius: 18px; display: flex; justify-content: center; align-items: center;
             color: white; font-size: 26px; transform: translateY(-22px); box-shadow: 0 6px 15px rgba(0,164,167,0.3);
         }
+
+        /* 登入頁面 */
+        #screen-login {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(160deg, var(--primary-teal) 0%, var(--nanshan-navy) 100%);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 2000; padding: 24px;
+        }
+        .login-card {
+            background: white; border-radius: 28px; padding: 36px 28px;
+            width: 100%; max-width: 400px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+        .login-logo {
+            text-align: center; margin-bottom: 28px;
+        }
+        .login-logo .logo-icon {
+            width: 72px; height: 72px; border-radius: 22px;
+            background: linear-gradient(135deg, var(--primary-teal), var(--nanshan-navy));
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 14px; color: white; font-size: 32px;
+            box-shadow: 0 8px 20px rgba(0,164,167,0.35);
+        }
+        .login-logo h2 { margin: 0; color: var(--nanshan-navy); font-size: 22px; font-weight: 900; }
+        .login-logo p { margin: 4px 0 0; color: #888; font-size: 13px; }
+        .login-field { margin-bottom: 14px; }
+        .login-field label { font-size: 12px; color: #888; font-weight: bold; letter-spacing: 0.5px; display: block; margin-bottom: 6px; text-transform: uppercase; }
+        .login-input {
+            width: 100%; border: 1.5px solid #eee; border-radius: 12px;
+            padding: 12px 14px; font-size: 14px; outline: none;
+            font-family: "Microsoft JhengHei", "PingFang TC", sans-serif;
+            transition: border-color 0.2s;
+        }
+        .login-input:focus { border-color: var(--primary-teal); }
+        .btn-login {
+            width: 100%; background: linear-gradient(135deg, var(--primary-teal), var(--nanshan-navy));
+            color: white; border: none; padding: 14px; border-radius: 14px;
+            font-size: 15px; font-weight: bold; cursor: pointer; margin-top: 8px;
+        }
+        .btn-guest {
+            width: 100%; background: none; border: none; color: var(--primary-teal);
+            font-size: 14px; font-weight: bold; cursor: pointer; margin-top: 16px;
+            padding: 10px; border-radius: 12px; transition: background 0.15s;
+        }
+        .btn-guest:hover { background: rgba(0,164,167,0.08); }
     </style>
 </head>
 <body>
+
+<div id="screen-login">
+    <div class="login-card">
+        <div class="login-logo">
+            <div class="logo-icon"><i class="fa-solid fa-mountain"></i></div>
+            <h2>Hi! 山友</h2>
+            <p>南山人的知識交流平台</p>
+        </div>
+        <div class="login-field">
+            <label>帳號</label>
+            <input type="text" class="login-input" placeholder="請輸入帳號">
+        </div>
+        <div class="login-field">
+            <label>密碼</label>
+            <input type="password" class="login-input" placeholder="請輸入密碼">
+        </div>
+        <button class="btn-login">登入</button>
+        <button class="btn-guest" onclick="enterAsGuest()">以訪客身分登入</button>
+    </div>
+</div>
 
 <div class="app-screen">
         
@@ -244,15 +309,15 @@
             <!-- 4. 個人 -->
             <div id="view-profile" class="view">
                 <div style="text-align: center; padding: 20px;">
-                    <div style="width: 80px; height: 80px; border-radius: 50%; background: var(--nanshan-navy); margin: 0 auto 10px; display: flex; align-items:center; justify-content:center; font-size:35px; color:white; border: 4px solid white; box-shadow:0 5px 15px rgba(0,0,0,0.1);">
-                        <i class="fa-solid fa-shield-halved"></i>
+                    <div style="width: 80px; height: 80px; border-radius: 50%; background: #bbb; margin: 0 auto 10px; display: flex; align-items:center; justify-content:center; font-size:35px; color:white; border: 4px solid white; box-shadow:0 5px 15px rgba(0,0,0,0.1);">
+                        <i class="fa-solid fa-user"></i>
                     </div>
-                    <h3 style="margin: 0;">山友小安</h3>
-                    <span style="color: var(--primary-teal); font-weight:bold; font-size: 14px;">資訊安全部</span>
+                    <h3 style="margin: 0;">訪客</h3>
+                    <span style="color: #aaa; font-weight:bold; font-size: 14px;">尚未登入</span>
                 </div>
                 <div style="background:white; border-radius:18px; overflow:hidden; box-shadow:0 2px 10px rgba(0,0,0,0.03);">
-                    <div style="padding:15px; border-bottom:1px solid #f5f5f5; display:flex; justify-content:space-between;"><span>我的發文回饋</span><i class="fa-solid fa-chevron-right" style="color:#ccc;"></i></div>
-                    <div style="padding:15px; border-bottom:1px solid #f5f5f5; display:flex; justify-content:space-between;"><span>收藏的山友智慧</span><i class="fa-solid fa-chevron-right" style="color:#ccc;"></i></div>
+                    <div style="padding:15px; border-bottom:1px solid #f5f5f5; display:flex; justify-content:space-between; cursor:pointer;" onclick="alert('登入後即可使用此功能！')"><span>我的發文回饋</span><i class="fa-solid fa-chevron-right" style="color:#ccc;"></i></div>
+                    <div style="padding:15px; border-bottom:1px solid #f5f5f5; display:flex; justify-content:space-between; cursor:pointer;" onclick="alert('登入後即可使用此功能！')"><span>收藏的山友智慧</span><i class="fa-solid fa-chevron-right" style="color:#ccc;"></i></div>
                     <div style="padding:15px; border-bottom:1px solid #f5f5f5; display:flex; justify-content:space-between; color:var(--accent-orange); font-weight:bold;"><span>點數兌換 (已領取3張咖啡券)</span><i class="fa-solid fa-mug-hot"></i></div>
                 </div>
             </div>
@@ -293,6 +358,10 @@
 </div>
 
 <script>
+    function enterAsGuest() {
+        document.getElementById('screen-login').style.display = 'none';
+    }
+
     const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRmbD4sI6pf2sUYquUKwZMYGWtl-uFcuSGvfJvX8amjCLckwjknr9xP-edTZ_NrDwyLcG64Dxr2-91o/pub?output=csv';
     let myPoints = 1250;
     let postCounter = 0;

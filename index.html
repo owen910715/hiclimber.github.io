@@ -98,6 +98,27 @@
         .board-card i { font-size: 24px; margin-bottom: 10px; color: var(--primary-teal); display: block; }
         .board-card span { font-weight: bold; font-size: 13px; color: var(--nanshan-navy); }
 
+        /* 看板標籤徽章 */
+        .board-badge {
+            display: inline-block;
+            background: rgba(0,164,167,0.12);
+            color: var(--primary-teal);
+            font-size: 11px; font-weight: 700;
+            padding: 2px 8px; border-radius: 8px; margin-top: 3px;
+        }
+
+        /* 置頂貼文 */
+        .pinned-post-card {
+            border: 2px solid var(--primary-teal) !important;
+            background: linear-gradient(135deg, #f0fbfc 0%, #ffffff 100%) !important;
+        }
+        .pin-indicator {
+            display: inline-flex; align-items: center; gap: 5px;
+            background: var(--primary-teal); color: white;
+            font-size: 11px; font-weight: 700;
+            padding: 3px 10px; border-radius: 10px; margin-bottom: 10px;
+        }
+
         /* 成就樣式 */
         .achieve-box {
             background: white; border-radius: 20px; padding: 20px; margin-bottom: 15px;
@@ -250,6 +271,34 @@
         <div class="content-body">
             <!-- 1. 首頁 (試算表連動) -->
             <div id="view-home" class="view active">
+                <!-- 置頂回饋貼文 -->
+                <div class="post-card pinned-post-card" data-post-id="pinned-feedback">
+                    <div class="pin-indicator"><i class="fa-solid fa-thumbtack"></i> 置頂公告</div>
+                    <div class="post-header">
+                        <div class="avatar" style="background:var(--nanshan-navy)">管</div>
+                        <div style="flex:1;">
+                            <div class="poster-name">平台管理員</div>
+                        </div>
+                    </div>
+                    <div class="post-title">請給予此平台回饋</div>
+                    <div class="post-content">歡迎所有山友提供對本平台的意見與建議！您的回饋將幫助我們持續改進，打造更適合南山人的知識交流環境 🌟 請在下方留言，分享您的想法。</div>
+                    <div class="post-hashtags">#平台回饋 #一起進步</div>
+                    <div class="post-actions">
+                        <div class="action-item like-btn" onclick="toggleLike('pinned-feedback')">
+                            <i class="fa-regular fa-heart" style="color:#777"></i> <span>0</span>
+                        </div>
+                        <div class="action-item comment-btn">
+                            <i class="fa-regular fa-comment"></i> <span>0</span>
+                        </div>
+                    </div>
+                    <div id="comments-pinned-feedback" class="comments-section" style="display:block;">
+                        <div id="comment-list-pinned-feedback" class="comment-list"></div>
+                        <div class="comment-input-wrap">
+                            <input type="text" id="comment-input-pinned-feedback" class="comment-input" placeholder="寫下你的回饋意見..." onkeydown="if(event.key==='Enter')addComment('pinned-feedback')">
+                            <button class="comment-send-btn" onclick="addComment('pinned-feedback')"><i class="fa-solid fa-paper-plane"></i></button>
+                        </div>
+                    </div>
+                </div>
                 <div id="post-feed">
                     <div style="text-align:center; padding:40px; color:#999;">
                         <i class="fas fa-sync fa-spin"></i> 正在獲取最新回饋...
@@ -267,6 +316,7 @@
                     <div class="board-card" onclick="showBoard('時事話題')"><i class="fa-solid fa-earth-americas"></i><span>時事話題</span></div>
                     <div class="board-card" onclick="showBoard('社團活動')"><i class="fa-solid fa-umbrella-beach"></i><span>社團活動</span></div>
                     <div class="board-card" onclick="showBoard('職場補給站')"><i class="fa-solid fa-coffee"></i><span>職場補給站</span></div>
+                    <div class="board-card" onclick="showBoard('心情')"><i class="fa-solid fa-face-smile"></i><span>心情</span></div>
                 </div>
             </div>
 
@@ -604,12 +654,16 @@
         feed.innerHTML = '<div style="font-size:12px; color:#999; text-align:center; margin-bottom:10px;">' + msg + '</div>';
         // 先顯示使用者自發貼文
         prependUserPosts(feed);
-        renderPost("資安部小安", "新版 VPN 登入教學", "各位山友，新版 VPN 請記得先下載認證器...", "#疑難雜症", feed, makeStableId("資安部小安", "新版 VPN 登入教學"));
-        renderPost("南山小司機", "10樓咖啡機又修好了！", "這次維修後咖啡豆好像換了，大家快去喝。", "#生活大發現", feed, makeStableId("南山小司機", "10樓咖啡機又修好了！"));
-        renderPost("實習生阿明", "實習第一週心得", "南山的文化真的很讚，學長姐都很願意教...", "#實習日誌", feed, makeStableId("實習生阿明", "實習第一週心得"));
+        // 顯示所有看板的範例貼文，並標示所屬看板
+        Object.keys(boardData).forEach(function(boardName) {
+            boardData[boardName].forEach(function(p) {
+                const stableId = makeStableId(p.name, p.title);
+                renderPost(p.name, p.title, p.content, p.tags, feed, stableId, false, boardName);
+            });
+        });
     }
 
-    function renderPost(name, title, content, tags, feedEl, stableId, prepend) {
+    function renderPost(name, title, content, tags, feedEl, stableId, prepend, boardLabel) {
         if (!feedEl) feedEl = document.getElementById('post-feed');
         const postId = stableId || ('post-' + (++postCounter));
         const state = getPostState(postId);
@@ -623,10 +677,17 @@
             '<div class="comment-item"><span class="comment-name">' + escapeHtml(c.name) + '</span><span class="comment-text">' + escapeHtml(c.text) + '</span><span class="comment-time">' + escapeHtml(c.time) + '</span></div>'
         ).join('');
 
+        const boardBadgeHtml = boardLabel
+            ? '<span class="board-badge"><i class="fa-solid fa-compass" style="font-size:10px; margin-right:3px;"></i>' + escapeHtml(boardLabel) + '</span>'
+            : '';
+
         card.innerHTML =
             '<div class="post-header">' +
                 '<div class="avatar" style="background:' + color + '">' + escapeHtml(name.substring(0, 1)) + '</div>' +
-                '<div class="poster-name">' + escapeHtml(name) + ' · 剛剛</div>' +
+                '<div style="flex:1;">' +
+                    '<div class="poster-name">' + escapeHtml(name) + ' · 剛剛</div>' +
+                    boardBadgeHtml +
+                '</div>' +
             '</div>' +
             '<div class="post-title">' + escapeHtml(title) + '</div>' +
             '<div class="post-content">' + escapeHtml(content) + '</div>' +
@@ -642,7 +703,7 @@
                     '<i class="fa-regular fa-bookmark" style="color:#777"></i>' +
                 '</div>' +
             '</div>' +
-            '<div id="comments-' + postId + '" class="comments-section" style="display:none;">' +
+            '<div id="comments-' + postId + '" class="comments-section" style="display:block;">' +
                 '<div id="comment-list-' + postId + '" class="comment-list">' + commentsHtml + '</div>' +
                 '<div class="comment-input-wrap">' +
                     '<input type="text" id="comment-input-' + postId + '" class="comment-input" placeholder="寫下你的留言..." onkeydown="if(event.key===\'Enter\')addComment(\'' + postId + '\')">' +
@@ -692,6 +753,10 @@
         '職場補給站': [
             { name: '人資部小晴', title: '新人必知！南山 5 大員工福利整理', content: '① 彈性上下班 ② 年度健檢 ③ 員工旅遊補助 ④ 生育/育兒津貼 ⑤ 教育訓練補助。其中教育訓練補助每年最高 2 萬元，可用於考取證照或修讀課程。新人趕快申請！', tags: '#職場補給站 #員工福利 #新人必看' },
             { name: '資深山友老陳', title: '年終考核前必讀：如何寫出亮眼的自評表', content: '自評表是向主管展示你一整年努力的舞台。建議以「數字化成果 → 克服的挑戰 → 未來計畫」三段式撰寫。切記避免過度謙虛，要客觀、具體地呈現你的貢獻！', tags: '#職場補給站 #年終考核 #職涯技巧' }
+        ],
+        '心情': [
+            { name: '資安部小安', title: '新版 VPN 登入教學', content: '各位山友，新版 VPN 請記得先下載認證器 App，並確保裝置時間與網路時間同步。若仍有問題，請聯絡資訊服務台分機 1234。', tags: '#心情 #疑難雜症 #VPN' },
+            { name: '南山小司機', title: '10樓咖啡機又修好了！', content: '這次維修後咖啡豆好像換了，大家快去喝。10 樓的隱藏版午後好去處又回來了！', tags: '#心情 #生活大發現 #咖啡' }
         ]
     };
 
@@ -713,6 +778,36 @@
     }
 
     // 啟動與自動定時讀取
+    function initPinnedPost() {
+        const postId = 'pinned-feedback';
+        if (!postStates[postId]) {
+            const storedComments = getStoredComments(postId);
+            postStates[postId] = {
+                liked: false, saved: false,
+                likeCount: 0,
+                comments: storedComments !== null ? storedComments : []
+            };
+        }
+        const state = postStates[postId];
+        const commentList = document.getElementById('comment-list-' + postId);
+        if (commentList) {
+            commentList.innerHTML = state.comments.map(function(c) {
+                return '<div class="comment-item"><span class="comment-name">' + escapeHtml(c.name) + '</span><span class="comment-text">' + escapeHtml(c.text) + '</span><span class="comment-time">' + escapeHtml(c.time) + '</span></div>';
+            }).join('');
+        }
+        const likeBtn = document.querySelector('[data-post-id="' + postId + '"] .like-btn span');
+        if (likeBtn) likeBtn.textContent = state.likeCount;
+        const commentBtn = document.querySelector('[data-post-id="' + postId + '"] .comment-btn span');
+        if (commentBtn) commentBtn.textContent = state.comments.length;
+        // Update like icon if already liked
+        const likeIcon = document.querySelector('[data-post-id="' + postId + '"] .like-btn i');
+        if (likeIcon && state.liked) {
+            likeIcon.className = 'fa-solid fa-heart';
+            likeIcon.style.color = '#ff4757';
+        }
+    }
+
+    initPinnedPost();
     loadSheetsData();
     setInterval(loadSheetsData, 15000);
 </script>

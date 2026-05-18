@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hi! 山友 V7 - 旗艦穩定版</title>
+    <title>Hi! 山友</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -37,7 +37,7 @@
         }
 
         /* 內容視圖切換 */
-        .content-body { flex: 1; overflow-y: auto; }
+        .content-body { flex: 1; overflow-y: auto; padding-bottom: max(72px, 52px + env(safe-area-inset-bottom)); }
         .view { display: none; padding: 15px; animation: fadeIn 0.3s ease-in-out; }
         .view.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
@@ -174,6 +174,7 @@
 
         /* 底部導航 */
         .bottom-nav {
+            position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
             background: var(--white); display: flex;
             justify-content: space-around; align-items: center; border-top: 1px solid #eee;
             padding-bottom: max(20px, env(safe-area-inset-bottom));
@@ -424,6 +425,8 @@
             return;
         }
         localStorage.setItem('hiclimber_loggedIn', 'true');
+        localStorage.setItem('hiclimber_username', username);
+        currentUser = username;
         document.getElementById('screen-login').style.display = 'none';
     }
 
@@ -432,25 +435,59 @@
         document.getElementById('screen-login').style.display = 'none';
     }
 
+    // ── Firebase Realtime Database 設定 ──
+    // 請將下方 URL 換成你的 Firebase Realtime Database 網址
+    // 例如：'https://your-project-default-rtdb.firebaseio.com'
+    // 設定方式：Firebase Console → 建立專案 → Realtime Database → 複製資料庫 URL
+    // 並將規則設定為允許讀寫：{ "rules": { ".read": true, ".write": true } }
+    const FIREBASE_DB_URL = 'https://hiclimber-aafa4-default-rtdb.asia-southeast1.firebasedatabase.app';
+
     const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRmbD4sI6pf2sUYquUKwZMYGWtl-uFcuSGvfJvX8amjCLckwjknr9xP-edTZ_NrDwyLcG64Dxr2-91o/pub?output=csv';
     let myPoints = 1250;
     let postCounter = 0;
+    let currentUser = localStorage.getItem('hiclimber_username') || '訪客';
     const postStates = {};
 
-    /* ── localStorage 工具 ── */
-    function getStoredComments(postId) {
-        try {
-            const all = JSON.parse(localStorage.getItem('hiclimber_comments') || '{}');
-            return all[postId] || null;
-        } catch(e) { return null; }
+    /* ── Firebase / localStorage 留言工具 ── */
+    function isFirebaseConfigured() {
+        return FIREBASE_DB_URL && !FIREBASE_DB_URL.includes('YOUR-PROJECT');
     }
 
-    function saveComments(postId, comments) {
-        try {
-            const all = JSON.parse(localStorage.getItem('hiclimber_comments') || '{}');
-            all[postId] = comments;
-            localStorage.setItem('hiclimber_comments', JSON.stringify(all));
-        } catch(e) {}
+    async function getStoredComments(postId) {
+        if (isFirebaseConfigured()) {
+            try {
+                const res = await fetch(FIREBASE_DB_URL + '/comments/' + encodeURIComponent(postId) + '.json');
+                if (!res.ok) return null;
+                const data = await res.json();
+                return Array.isArray(data) ? data : null;
+            } catch(e) { return null; }
+        } else {
+            try {
+                const all = JSON.parse(localStorage.getItem('hiclimber_comments') || '{}');
+                return all[postId] || null;
+            } catch(e) { return null; }
+        }
+    }
+
+    async function saveComments(postId, comments) {
+        if (isFirebaseConfigured()) {
+            try {
+                const res = await fetch(FIREBASE_DB_URL + '/comments/' + encodeURIComponent(postId) + '.json', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(comments)
+                });
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+            } catch(e) {
+                throw e; // let caller handle
+            }
+        } else {
+            try {
+                const all = JSON.parse(localStorage.getItem('hiclimber_comments') || '{}');
+                all[postId] = comments;
+                localStorage.setItem('hiclimber_comments', JSON.stringify(all));
+            } catch(e) {}
+        }
     }
 
     function saveUserPost(post) {
@@ -479,18 +516,30 @@
 
     function getPostState(postId) {
         if (!postStates[postId]) {
-            const storedComments = getStoredComments(postId);
             postStates[postId] = {
                 liked: false,
                 saved: false,
                 likeCount: Math.floor(Math.random() * 20) + 1,
-                comments: storedComments !== null ? storedComments : [
-                    { name: '資深山友', text: '感謝分享！', time: '2小時前' },
-                    { name: '新鮮人小葉', text: '太有幫助了 👍', time: '1小時前' }
-                ]
+                comments: []
             };
         }
         return postStates[postId];
+    }
+
+    async function loadCommentsForPost(postId) {
+        const comments = await getStoredComments(postId);
+        const state = getPostState(postId);
+        if (comments && comments.length) {
+            state.comments = comments;
+            const list = document.getElementById('comment-list-' + postId);
+            if (list) {
+                list.innerHTML = comments.map(function(c) {
+                    return '<div class="comment-item"><span class="comment-name">' + escapeHtml(c.name) + '</span><span class="comment-text">' + escapeHtml(c.text) + '</span><span class="comment-time">' + escapeHtml(c.time) + '</span></div>';
+                }).join('');
+            }
+        }
+        const commentBtn = document.querySelector('[data-post-id="' + postId + '"] .comment-btn span');
+        if (commentBtn) commentBtn.textContent = state.comments.length;
     }
 
     function navTo(id, el) {
@@ -534,18 +583,24 @@
         }
     }
 
-    function addComment(postId) {
+    async function addComment(postId) {
         const input = document.getElementById('comment-input-' + postId);
         const text = input.value.trim();
         if (!text) return;
         const state = getPostState(postId);
-        const newComment = { name: '訪客', text: text, time: '剛剛' };
+        const newComment = { name: currentUser, text: text, time: '剛剛' };
         state.comments.push(newComment);
-        saveComments(postId, state.comments);
+        try {
+            await saveComments(postId, state.comments);
+        } catch(e) {
+            state.comments.pop();
+            alert('留言儲存失敗，請稍後再試。');
+            return;
+        }
         const list = document.getElementById('comment-list-' + postId);
         const div = document.createElement('div');
         div.className = 'comment-item';
-        div.innerHTML = '<span class="comment-name">訪客</span><span class="comment-text">' + escapeHtml(text) + '</span><span class="comment-time">剛剛</span>';
+        div.innerHTML = '<span class="comment-name">' + escapeHtml(currentUser) + '</span><span class="comment-text">' + escapeHtml(text) + '</span><span class="comment-time">剛剛</span>';
         list.appendChild(div);
         input.value = '';
         // Update comment count badge
@@ -744,6 +799,7 @@
         } else {
             feedEl.appendChild(card);
         }
+        loadCommentsForPost(postId);
     }
 
     function earn(btn) {
@@ -805,23 +861,17 @@
     }
 
     // 啟動與自動定時讀取
-    function initPinnedPost() {
+    async function initPinnedPost() {
         const postId = 'pinned-feedback';
         if (!postStates[postId]) {
-            const storedComments = getStoredComments(postId);
             postStates[postId] = {
                 liked: false, saved: false,
                 likeCount: 0,
-                comments: storedComments !== null ? storedComments : []
+                comments: []
             };
         }
+        await loadCommentsForPost(postId);
         const state = postStates[postId];
-        const commentList = document.getElementById('comment-list-' + postId);
-        if (commentList) {
-            commentList.innerHTML = state.comments.map(function(c) {
-                return '<div class="comment-item"><span class="comment-name">' + escapeHtml(c.name) + '</span><span class="comment-text">' + escapeHtml(c.text) + '</span><span class="comment-time">' + escapeHtml(c.time) + '</span></div>';
-            }).join('');
-        }
         const likeBtn = document.querySelector('[data-post-id="' + postId + '"] .like-btn span');
         if (likeBtn) likeBtn.textContent = state.likeCount;
         const commentBtn = document.querySelector('[data-post-id="' + postId + '"] .comment-btn span');

@@ -468,7 +468,9 @@
         const stableId = makeStableId(name, title + post.time);
         renderPost(name, title, content, tags, feed, stableId, true);
         // 將新貼文捲到最上方
-        feed.firstChild && feed.firstChild.scrollIntoView({ behavior: 'smooth' });
+        if (feed.firstChild) {
+            feed.firstChild.scrollIntoView({ behavior: 'smooth' });
+        }
 
         // 重置表單
         ['new-post-name','new-post-title','new-post-content','new-post-tags'].forEach(id => {

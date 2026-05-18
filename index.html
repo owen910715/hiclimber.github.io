@@ -64,6 +64,31 @@
             padding: 12px; border-radius: 12px; font-weight: bold; cursor: pointer;
         }
 
+        /* 愛心 / 收藏 */
+        .action-item { cursor: pointer; transition: transform 0.1s; }
+        .action-item:active { transform: scale(0.85); }
+        .action-item.liked i { color: #ff4757 !important; }
+        .action-item.saved i { color: var(--nanshan-navy) !important; }
+
+        /* 留言區 */
+        .comments-section { margin-top: 12px; border-top: 1px solid #f0f0f0; padding-top: 10px; }
+        .comment-list { margin-bottom: 8px; }
+        .comment-item { display: flex; gap: 8px; align-items: flex-start; margin-bottom: 8px; }
+        .comment-name { font-weight: bold; font-size: 12px; color: var(--nanshan-navy); white-space: nowrap; }
+        .comment-text { font-size: 13px; color: #444; flex: 1; line-height: 1.5; }
+        .comment-time { font-size: 11px; color: #aaa; white-space: nowrap; }
+        .comment-input-wrap { display: flex; gap: 8px; align-items: center; }
+        .comment-input { flex: 1; border: 1px solid #eee; border-radius: 20px; padding: 8px 14px; font-size: 13px; outline: none; }
+        .comment-input:focus { border-color: var(--primary-teal); }
+        .comment-send-btn { width: 36px; height: 36px; flex-shrink: 0; border: none; background: var(--primary-teal); color: white; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+
+        /* 看板詳情 */
+        .board-card { cursor: pointer; transition: transform 0.1s; }
+        .board-card:active { transform: scale(0.95); }
+        .board-detail-header { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; }
+        .back-btn { background: none; border: none; color: var(--nanshan-navy); font-size: 20px; cursor: pointer; padding: 4px 8px; border-radius: 8px; }
+        .back-btn:active { background: #eee; }
+
         /* 看板樣式 */
         .board-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .board-card {
@@ -129,13 +154,22 @@
             <div id="view-board" class="view">
                 <h3 style="color:var(--nanshan-navy); margin-bottom:15px;">看板分類</h3>
                 <div class="board-grid">
-                    <div class="board-card"><i class="fa-solid fa-screwdriver-wrench"></i><span>疑難雜症</span></div>
-                    <div class="board-card"><i class="fa-solid fa-wand-magic-sparkles"></i><span>生活大發現</span></div>
-                    <div class="board-card"><i class="fa-solid fa-pen-nib"></i><span>實習日誌</span></div>
-                    <div class="board-card"><i class="fa-solid fa-earth-americas"></i><span>時事話題</span></div>
-                    <div class="board-card"><i class="fa-solid fa-umbrella-beach"></i><span>社團活動</span></div>
-                    <div class="board-card"><i class="fa-solid fa-coffee"></i><span>職場補給站</span></div>
+                    <div class="board-card" onclick="showBoard('疑難雜症')"><i class="fa-solid fa-screwdriver-wrench"></i><span>疑難雜症</span></div>
+                    <div class="board-card" onclick="showBoard('生活大發現')"><i class="fa-solid fa-wand-magic-sparkles"></i><span>生活大發現</span></div>
+                    <div class="board-card" onclick="showBoard('實習日誌')"><i class="fa-solid fa-pen-nib"></i><span>實習日誌</span></div>
+                    <div class="board-card" onclick="showBoard('時事話題')"><i class="fa-solid fa-earth-americas"></i><span>時事話題</span></div>
+                    <div class="board-card" onclick="showBoard('社團活動')"><i class="fa-solid fa-umbrella-beach"></i><span>社團活動</span></div>
+                    <div class="board-card" onclick="showBoard('職場補給站')"><i class="fa-solid fa-coffee"></i><span>職場補給站</span></div>
                 </div>
+            </div>
+
+            <!-- 2b. 看板詳情 -->
+            <div id="view-board-detail" class="view">
+                <div class="board-detail-header">
+                    <button class="back-btn" onclick="goBackToBoard()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <h3 style="color:var(--nanshan-navy); margin:0;" id="board-detail-title"></h3>
+                </div>
+                <div id="board-detail-feed"></div>
             </div>
 
             <!-- 3. 成就 -->
@@ -195,36 +229,100 @@
     // ⚠️ 請確保您的連結為「發佈至網路」並選擇「CSV」
     const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRmbD4sI6pf2sUYquUKwZMYGWtl-uFcuSGvfJvX8amjCLckwjknr9xP-edTZ_NrDwyLcG64Dxr2-91o/pub?output=csv';
     let myPoints = 1250;
+    let postCounter = 0;
+    const postStates = {};
+
+    function getPostState(postId) {
+        if (!postStates[postId]) {
+            postStates[postId] = {
+                liked: false,
+                saved: false,
+                likeCount: Math.floor(Math.random() * 20) + 1,
+                comments: [
+                    { name: '資深山友', text: '感謝分享！', time: '2小時前' },
+                    { name: '新鮮人小葉', text: '太有幫助了 👍', time: '1小時前' }
+                ]
+            };
+        }
+        return postStates[postId];
+    }
 
     function navTo(id, el) {
         document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
         document.getElementById('view-' + id).classList.add('active');
-        el.classList.add('active');
+        if (el) el.classList.add('active');
+    }
+
+    function toggleLike(postId) {
+        const state = getPostState(postId);
+        state.liked = !state.liked;
+        state.likeCount += state.liked ? 1 : -1;
+        const btn = document.querySelector('[data-post-id="' + postId + '"] .like-btn');
+        const icon = btn.querySelector('i');
+        const countEl = btn.querySelector('span');
+        icon.className = state.liked ? 'fa-solid fa-heart' : 'fa-regular fa-heart';
+        icon.style.color = state.liked ? '#ff4757' : '#777';
+        countEl.textContent = state.likeCount;
+    }
+
+    function toggleSave(postId) {
+        const state = getPostState(postId);
+        state.saved = !state.saved;
+        const btn = document.querySelector('[data-post-id="' + postId + '"] .save-btn');
+        const icon = btn.querySelector('i');
+        icon.className = state.saved ? 'fa-solid fa-bookmark' : 'fa-regular fa-bookmark';
+        icon.style.color = state.saved ? 'var(--nanshan-navy)' : '#777';
+    }
+
+    function toggleComments(postId) {
+        const section = document.getElementById('comments-' + postId);
+        const isVisible = section.style.display === 'block';
+        section.style.display = isVisible ? 'none' : 'block';
+        if (!isVisible) {
+            const input = document.getElementById('comment-input-' + postId);
+            if (input) input.focus();
+        }
+    }
+
+    function addComment(postId) {
+        const input = document.getElementById('comment-input-' + postId);
+        const text = input.value.trim();
+        if (!text) return;
+        const state = getPostState(postId);
+        state.comments.push({ name: '山友小安', text: text, time: '剛剛' });
+        const list = document.getElementById('comment-list-' + postId);
+        const div = document.createElement('div');
+        div.className = 'comment-item';
+        div.innerHTML = '<span class="comment-name">山友小安</span><span class="comment-text">' + escapeHtml(text) + '</span><span class="comment-time">剛剛</span>';
+        list.appendChild(div);
+        input.value = '';
+        // Update comment count badge
+        const commentBtn = document.querySelector('[data-post-id="' + postId + '"] .comment-btn span');
+        if (commentBtn) commentBtn.textContent = state.comments.length;
+    }
+
+    function escapeHtml(str) {
+        return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
 
     // 核心資料讀取邏輯
     async function loadSheetsData() {
         const feed = document.getElementById('post-feed');
         try {
-            // 加入抗快取參數 (?t=...) 確保資料最新
             const response = await fetch(csvUrl + '&t=' + new Date().getTime());
             if (!response.ok) throw new Error('Network fail');
-            
             const rawData = await response.text();
             const rows = parseCSV(rawData);
-            
             if (rows.length <= 1) {
                 showMockData("目前表單尚未有資料，快去填寫回覆吧！");
                 return;
             }
-
-            feed.innerHTML = ''; // 清除 Loading
-            // 從最後一筆顯示到第一筆 (最新發文在前)
+            feed.innerHTML = '';
             for (let i = rows.length - 1; i >= 1; i--) {
                 const col = rows[i];
                 if (col.length >= 3) {
-                    renderPost(col[1], col[2], col[3], col[4] || "#內部分享");
+                    renderPost(col[1], col[2], col[3], col[4] || "#內部分享", feed);
                 }
             }
         } catch (error) {
@@ -248,34 +346,55 @@
 
     function showMockData(msg) {
         const feed = document.getElementById('post-feed');
-        feed.innerHTML = `<div style="font-size:12px; color:#999; text-align:center; margin-bottom:10px;">${msg}</div>`;
-        renderPost("資安部小安", "新版 VPN 登入教學", "各位山友，新版 VPN 請記得先下載認證器...", "#疑難雜症");
-        renderPost("南山小司機", "10樓咖啡機又修好了！", "這次維修後咖啡豆好像換了，大家快去喝。", "#生活大發現");
-        renderPost("實習生阿明", "實習第一週心得", "南山的文化真的很讚，學長姐都很願意教...", "#實習日誌");
+        feed.innerHTML = '<div style="font-size:12px; color:#999; text-align:center; margin-bottom:10px;">' + msg + '</div>';
+        renderPost("資安部小安", "新版 VPN 登入教學", "各位山友，新版 VPN 請記得先下載認證器...", "#疑難雜症", feed);
+        renderPost("南山小司機", "10樓咖啡機又修好了！", "這次維修後咖啡豆好像換了，大家快去喝。", "#生活大發現", feed);
+        renderPost("實習生阿明", "實習第一週心得", "南山的文化真的很讚，學長姐都很願意教...", "#實習日誌", feed);
     }
 
-    function renderPost(name, title, content, tags) {
-        const feed = document.getElementById('post-feed');
+    function renderPost(name, title, content, tags, feedEl) {
+        if (!feedEl) feedEl = document.getElementById('post-feed');
+        const postId = 'post-' + (++postCounter);
+        const state = getPostState(postId);
+
         const card = document.createElement('div');
         card.className = 'post-card';
+        card.dataset.postId = postId;
         const color = (name.includes('部') || name.includes('組')) ? 'var(--nanshan-navy)' : 'var(--primary-teal)';
-        
-        card.innerHTML = `
-            <div class="post-header">
-                <div class="avatar" style="background:${color}">${name.substring(0,1)}</div>
-                <div class="poster-name">${name} · 剛剛</div>
-            </div>
-            <div class="post-title">${title}</div>
-            <div class="post-content">${content}</div>
-            <div class="post-hashtags">${tags}</div>
-            <div class="post-actions">
-                <div class="action-item" onclick="this.style.color='#ff4757'"><i class="fa-solid fa-heart"></i></div>
-                <div class="action-item"><i class="fa-regular fa-comment"></i></div>
-                <div class="action-item"><i class="fa-regular fa-bookmark"></i></div>
-            </div>
-            <button class="btn-help" onclick="earn(this)">這對我有幫助 (+5 點數)</button>
-        `;
-        feed.appendChild(card);
+
+        const commentsHtml = state.comments.map(c =>
+            '<div class="comment-item"><span class="comment-name">' + escapeHtml(c.name) + '</span><span class="comment-text">' + escapeHtml(c.text) + '</span><span class="comment-time">' + escapeHtml(c.time) + '</span></div>'
+        ).join('');
+
+        card.innerHTML =
+            '<div class="post-header">' +
+                '<div class="avatar" style="background:' + color + '">' + escapeHtml(name.substring(0, 1)) + '</div>' +
+                '<div class="poster-name">' + escapeHtml(name) + ' · 剛剛</div>' +
+            '</div>' +
+            '<div class="post-title">' + escapeHtml(title) + '</div>' +
+            '<div class="post-content">' + escapeHtml(content) + '</div>' +
+            '<div class="post-hashtags">' + escapeHtml(tags) + '</div>' +
+            '<div class="post-actions">' +
+                '<div class="action-item like-btn" onclick="toggleLike(\'' + postId + '\')">' +
+                    '<i class="fa-regular fa-heart" style="color:#777"></i> <span>' + state.likeCount + '</span>' +
+                '</div>' +
+                '<div class="action-item comment-btn" onclick="toggleComments(\'' + postId + '\')">' +
+                    '<i class="fa-regular fa-comment"></i> <span>' + state.comments.length + '</span>' +
+                '</div>' +
+                '<div class="action-item save-btn" onclick="toggleSave(\'' + postId + '\')">' +
+                    '<i class="fa-regular fa-bookmark" style="color:#777"></i>' +
+                '</div>' +
+            '</div>' +
+            '<div id="comments-' + postId + '" class="comments-section" style="display:none;">' +
+                '<div id="comment-list-' + postId + '" class="comment-list">' + commentsHtml + '</div>' +
+                '<div class="comment-input-wrap">' +
+                    '<input type="text" id="comment-input-' + postId + '" class="comment-input" placeholder="寫下你的留言...">' +
+                    '<button class="comment-send-btn" onclick="addComment(\'' + postId + '\')"><i class="fa-solid fa-paper-plane"></i></button>' +
+                '</div>' +
+            '</div>' +
+            '<button class="btn-help" onclick="earn(this)">這對我有幫助 (+5 點數)</button>';
+
+        feedEl.appendChild(card);
     }
 
     function earn(btn) {
@@ -287,9 +406,53 @@
         btn.style.opacity = '0.5';
     }
 
+    // 看板範例貼文資料（每個看板各 2 篇）
+    const boardData = {
+        '疑難雜症': [
+            { name: '資安部小安', title: '新版 VPN 登入後無法連線怎麼辦？', content: '各位山友，最近陸續收到反映 VPN 連線後仍無法存取內網。請確認已安裝最新版認證器 App，並確保裝置時間與網路時間同步。若仍有問題，請聯絡資訊服務台分機 1234。', tags: '#疑難雜症 #VPN #資安' },
+            { name: '行政部阿華', title: '辦公室印表機設定教學（Windows 11）', content: '近期系統升級後，部分同仁的印表機驅動失效。請至「設定 → 藍牙與裝置 → 印表機」重新新增，選擇網路印表機 NANSHAN-PRINT-3F，驅動程式選最新版即可。', tags: '#疑難雜症 #印表機 #Windows11' }
+        ],
+        '生活大發現': [
+            { name: '總務部小凱', title: '地下一樓新開了親民小吃部！', content: '大家有好消息！B1 新進駐了一家自助餐，價格親民、菜色豐富，12:00～13:30 供餐。推薦控肉飯配湯，份量超足！已成為同事午餐新選擇。', tags: '#生活大發現 #美食 #公司福利' },
+            { name: '南山小司機', title: '10樓觀景平台的下午茶時光', content: '分享一個隱藏版好去處：10樓觀景平台在下午 3 點到 4 點間幾乎沒什麼人，帶杯咖啡、吹吹風、看看台北市景，壓力瞬間消一半！大家有機會可以去充電。', tags: '#生活大發現 #放鬆 #上班小確幸' }
+        ],
+        '實習日誌': [
+            { name: '實習生阿明', title: '實習第一週心得——比想像中還要忙！', content: '原本以為實習只是跑腿，沒想到第一週就參與了專案會議，還要做數據分析報告。雖然累，但學長姐都很耐心解說。推薦大家到南山實習，絕對學得到真功夫！', tags: '#實習日誌 #心得 #新鮮人' },
+            { name: '實習生小雅', title: '導師制度超貼心，入職不再迷茫', content: '南山的「山友導師計畫」讓每位實習生都配有專屬學長姐。我的導師每週和我 1-on-1，幫我設定學習目標、解答所有疑惑。對職場新人來說，這種引導真的很重要！', tags: '#實習日誌 #導師計畫 #職涯發展' }
+        ],
+        '時事話題': [
+            { name: '數位部小智', title: '保險業 AI 核保時代來了！你準備好了嗎？', content: '金管會近期鬆綁保險科技監理規範，允許業者導入 AI 輔助核保。目前南山也在試驗階段。這對業務同仁而言意味著作業效率大幅提升，但也需要學習新系統操作，各位覺得如何？', tags: '#時事話題 #AI #保險科技' },
+            { name: '資深山友老陳', title: '氣候變遷對保險業的衝擊與機遇', content: '極端天氣頻率上升，直接影響理賠成本與精算模型。但反過來看，這也是推廣「氣候險」的契機。如何在風險與市場機遇中取得平衡，是保險業未來十年的核心議題。', tags: '#時事話題 #ESG #氣候險' }
+        ],
+        '社團活動': [
+            { name: '登山社社長小峰', title: '【招募】2025 夏季健行：合歡山主峰踏查', content: '登山社即將舉辦夏季健行活動！目的地為合歡山主峰（海拔 3,417m），日期 6/28–6/29，名額限 20 人，費用自理。歡迎有登山經驗的山友一同參加，留言報名！', tags: '#社團活動 #登山社 #合歡山' },
+            { name: '籃球隊長阿駿', title: '第三屆南山盃籃球友誼賽開始報名！', content: '年度籃球盛典來啦！分為 3v3 和 5v5 組別，7 月 12 日於公司頂樓球場舉行。採隊伍報名制，每隊最少 4 人，優勝隊伍可獲得限定版南山運動毛巾一條！', tags: '#社團活動 #籃球賽 #運動' }
+        ],
+        '職場補給站': [
+            { name: '人資部小晴', title: '新人必知！南山 5 大員工福利整理', content: '① 彈性上下班 ② 年度健檢 ③ 員工旅遊補助 ④ 生育/育兒津貼 ⑤ 教育訓練補助。其中教育訓練補助每年最高 2 萬元，可用於考取證照或修讀課程。新人趕快申請！', tags: '#職場補給站 #員工福利 #新人必看' },
+            { name: '資深山友老陳', title: '年終考核前必讀：如何寫出亮眼的自評表', content: '自評表是向主管展示你一整年努力的舞台。建議以「數字化成果 → 克服的挑戰 → 未來計畫」三段式撰寫。切記避免過度謙虛，要客觀、具體地呈現你的貢獻！', tags: '#職場補給站 #年終考核 #職涯技巧' }
+        ]
+    };
+
+    function showBoard(boardName) {
+        const feedEl = document.getElementById('board-detail-feed');
+        feedEl.innerHTML = '';
+        (boardData[boardName] || []).forEach(function(p) {
+            renderPost(p.name, p.title, p.content, p.tags, feedEl);
+        });
+        document.getElementById('board-detail-title').textContent = boardName;
+        document.querySelectorAll('.view').forEach(function(v) { v.classList.remove('active'); });
+        document.getElementById('view-board-detail').classList.add('active');
+    }
+
+    function goBackToBoard() {
+        document.querySelectorAll('.view').forEach(function(v) { v.classList.remove('active'); });
+        document.getElementById('view-board').classList.add('active');
+    }
+
     // 啟動與自動定時讀取
     loadSheetsData();
-    setInterval(loadSheetsData, 15000); 
+    setInterval(loadSheetsData, 15000);
 </script>
 
 </body>

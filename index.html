@@ -469,13 +469,13 @@
         const text = input.value.trim();
         if (!text) return;
         const state = getPostState(postId);
-        const newComment = { name: '山友小安', text: text, time: '剛剛' };
+        const newComment = { name: '訪客', text: text, time: '剛剛' };
         state.comments.push(newComment);
         saveComments(postId, state.comments);
         const list = document.getElementById('comment-list-' + postId);
         const div = document.createElement('div');
         div.className = 'comment-item';
-        div.innerHTML = '<span class="comment-name">山友小安</span><span class="comment-text">' + escapeHtml(text) + '</span><span class="comment-time">剛剛</span>';
+        div.innerHTML = '<span class="comment-name">訪客</span><span class="comment-text">' + escapeHtml(text) + '</span><span class="comment-time">剛剛</span>';
         list.appendChild(div);
         input.value = '';
         // Update comment count badge
